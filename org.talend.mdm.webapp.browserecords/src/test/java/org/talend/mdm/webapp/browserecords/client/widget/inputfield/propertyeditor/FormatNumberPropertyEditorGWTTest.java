@@ -89,6 +89,8 @@ public class FormatNumberPropertyEditorGWTTest extends GWTTestCase {
     }
 
     public void testGetStringValue() {
+        // Test scientific notation convert to number on float type,like 7.0E-8 convert to 0.00000007 and 7.0E-7 convert
+        // to 0.0000007, shouldn't be 0.00000070
         FormatNumberPropertyEditor formatNumberPropertyEditor = new FormatNumberPropertyEditor(Float.class);
         assertEquals("0.00000007", formatNumberPropertyEditor.getStringValue(Float.parseFloat("0.00000007")));
         assertEquals("0.0000007", formatNumberPropertyEditor.getStringValue(Float.parseFloat("0.0000007")));
@@ -99,6 +101,7 @@ public class FormatNumberPropertyEditorGWTTest extends GWTTestCase {
         assertEquals("0.07", formatNumberPropertyEditor.getStringValue(Float.parseFloat("0.07")));
         assertEquals("0.7", formatNumberPropertyEditor.getStringValue(Float.parseFloat("0.7")));
         assertEquals("0.0", formatNumberPropertyEditor.getStringValue(Float.parseFloat("0")));
+        // Test scientific notation convert to number on double type
         formatNumberPropertyEditor = new FormatNumberPropertyEditor(Double.class);
         assertEquals("0.00000007", formatNumberPropertyEditor.getStringValue(Double.parseDouble("0.00000007")));
         assertEquals("0.0000007", formatNumberPropertyEditor.getStringValue(Double.parseDouble("0.0000007")));
@@ -109,6 +112,8 @@ public class FormatNumberPropertyEditorGWTTest extends GWTTestCase {
         assertEquals("0.07", formatNumberPropertyEditor.getStringValue(Double.parseDouble("0.07")));
         assertEquals("0.7", formatNumberPropertyEditor.getStringValue(Double.parseDouble("0.7")));
         assertEquals("0.0", formatNumberPropertyEditor.getStringValue(Double.parseDouble("0")));
+        // Test scientific notation convert to number on decimal type,like 7.0E-7 convert
+        // to 0.00000070, shouldn't be 0.0000007,because decimal type can set fraction digits.
         formatNumberPropertyEditor = new FormatNumberPropertyEditor(BigDecimal.class);
         assertEquals("0.00000007", formatNumberPropertyEditor.getStringValue(new BigDecimal("0.00000007")));
         assertEquals("0.00000070", formatNumberPropertyEditor.getStringValue(new BigDecimal("0.00000070")));
