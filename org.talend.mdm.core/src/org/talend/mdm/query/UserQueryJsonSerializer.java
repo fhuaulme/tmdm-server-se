@@ -320,11 +320,6 @@ public class UserQueryJsonSerializer extends VisitorAdapter<JsonElement> {
     }
 
     @Override
-    public JsonElement visit(ConstantCollection collection) {
-        return super.visit(collection);
-    }
-
-    @Override
     public JsonElement visit(StringConstant constant) {
         return toConstant(constant);
     }
@@ -500,8 +495,4 @@ public class UserQueryJsonSerializer extends VisitorAdapter<JsonElement> {
         return indexFieldObject;
     }
 
-    @Override
-    public JsonElement visit(StagingHasTask stagingHasTask) {
-        return super.visit(stagingHasTask);
-    }
 }
