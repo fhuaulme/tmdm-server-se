@@ -57,10 +57,20 @@ import com.google.gson.JsonPrimitive;
 import org.apache.commons.lang.NotImplementedException;
 import org.talend.mdm.commmon.metadata.FieldMetadata;
 
+/**
+ * This {@link com.amalto.core.query.user.Visitor} implementation transforms an {@link com.amalto.core.query.user.Expression}
+ * into JSON that can be then processed by a {@link QueryParser}.
+ */
 public class UserQueryJsonSerializer extends VisitorAdapter<JsonElement> {
 
     private static String toPath(Field field) {
         return field.getFieldMetadata().getContainingType().getName() + '/' + field.getFieldMetadata().getName();
+    }
+
+    private static JsonElement toConstant(ConstantExpression constantExpression) {
+        final JsonObject valueObject = new JsonObject();
+        valueObject.add("value", new JsonPrimitive(String.valueOf(constantExpression.getValue())));
+        return valueObject;
     }
 
     @Override
@@ -314,12 +324,6 @@ public class UserQueryJsonSerializer extends VisitorAdapter<JsonElement> {
         return super.visit(collection);
     }
 
-    private static JsonElement toConstant(ConstantExpression constantExpression) {
-        final JsonObject valueObject = new JsonObject();
-        valueObject.add("value", new JsonPrimitive(String.valueOf(constantExpression.getValue())));
-        return valueObject;
-    }
-
     @Override
     public JsonElement visit(StringConstant constant) {
         return toConstant(constant);
@@ -382,22 +386,26 @@ public class UserQueryJsonSerializer extends VisitorAdapter<JsonElement> {
 
     @Override
     public JsonElement visit(IsEmpty isEmpty) {
-        return super.visit(isEmpty);
+        JsonObject isEmptyObject = new JsonObject();
+        isEmptyObject.add("isEmpty", isEmpty.getField().accept(this));
+        return isEmptyObject;
     }
 
     @Override
     public JsonElement visit(NotIsEmpty notIsEmpty) {
-        return super.visit(notIsEmpty);
+        return new UnaryLogicOperator(new IsEmpty(notIsEmpty.getField()), Predicate.NOT).accept(this);
     }
 
     @Override
     public JsonElement visit(IsNull isNull) {
-        return super.visit(isNull);
+        JsonObject isNullObject = new JsonObject();
+        isNullObject.add("isNull", isNull.getField().accept(this));
+        return isNullObject;
     }
 
     @Override
     public JsonElement visit(NotIsNull notIsNull) {
-        return super.visit(notIsNull);
+        return new UnaryLogicOperator(new IsNull(notIsNull.getField()), Predicate.NOT).accept(this);
     }
 
     @Override
@@ -411,11 +419,6 @@ public class UserQueryJsonSerializer extends VisitorAdapter<JsonElement> {
         orderByObject.add("order_by", orderByContent);
 
         return orderByObject;
-    }
-
-    @Override
-    public JsonElement visit(Paging paging) {
-        return super.visit(paging);
     }
 
     @Override
@@ -465,7 +468,7 @@ public class UserQueryJsonSerializer extends VisitorAdapter<JsonElement> {
         atObjectContent.add("swing", new JsonPrimitive(at.getSwing().toString().toLowerCase()));
         atObject.add("as_of", atObjectContent);
 
-        return super.visit(at);
+        return atObject;
     }
 
     @Override
@@ -494,7 +497,7 @@ public class UserQueryJsonSerializer extends VisitorAdapter<JsonElement> {
         indexFieldObjectContent.add(new JsonPrimitive(indexedField.getPosition()));
         indexFieldObject.add("index", indexFieldObjectContent);
 
-        return super.visit(indexedField);
+        return indexFieldObject;
     }
 
     @Override
