@@ -1,3 +1,12 @@
+/*
+ * Copyright (C) 2006-2018 Talend Inc. - www.talend.com
+ *
+ * This source code is available under agreement available at
+ * %InstallDIR%\features\org.talend.rcp.branding.%PRODUCTNAME%\%PRODUCTNAME%license.txt
+ *
+ * You should have received a copy of the agreement along with this program; if not, write to Talend SA 9 rue Pages
+ * 92150 Suresnes, France
+ */
 package org.talend.mdm.query;
 
 import com.amalto.core.query.user.Alias;
@@ -7,7 +16,6 @@ import com.amalto.core.query.user.BinaryLogicOperator;
 import com.amalto.core.query.user.BooleanConstant;
 import com.amalto.core.query.user.ByteConstant;
 import com.amalto.core.query.user.Compare;
-import com.amalto.core.query.user.ConstantCollection;
 import com.amalto.core.query.user.ConstantCondition;
 import com.amalto.core.query.user.ConstantExpression;
 import com.amalto.core.query.user.Count;
@@ -45,7 +53,6 @@ import com.amalto.core.query.user.VisitorAdapter;
 import com.amalto.core.query.user.metadata.GroupSize;
 import com.amalto.core.query.user.metadata.StagingBlockKey;
 import com.amalto.core.query.user.metadata.StagingError;
-import com.amalto.core.query.user.metadata.StagingHasTask;
 import com.amalto.core.query.user.metadata.StagingSource;
 import com.amalto.core.query.user.metadata.StagingStatus;
 import com.amalto.core.query.user.metadata.TaskId;
