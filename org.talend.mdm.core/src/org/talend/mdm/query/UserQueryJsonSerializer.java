@@ -23,6 +23,7 @@ import com.amalto.core.query.user.DateConstant;
 import com.amalto.core.query.user.DateTimeConstant;
 import com.amalto.core.query.user.Distinct;
 import com.amalto.core.query.user.DoubleConstant;
+import com.amalto.core.query.user.Expression;
 import com.amalto.core.query.user.Field;
 import com.amalto.core.query.user.FieldFullText;
 import com.amalto.core.query.user.FloatConstant;
@@ -57,6 +58,7 @@ import com.amalto.core.query.user.metadata.StagingSource;
 import com.amalto.core.query.user.metadata.StagingStatus;
 import com.amalto.core.query.user.metadata.TaskId;
 import com.amalto.core.query.user.metadata.Timestamp;
+import com.amalto.core.util.User;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
@@ -67,8 +69,28 @@ import org.talend.mdm.commmon.metadata.FieldMetadata;
 /**
  * This {@link com.amalto.core.query.user.Visitor} implementation transforms an {@link com.amalto.core.query.user.Expression}
  * into JSON that can be then processed by a {@link QueryParser}.
+ *
+ * @see #toJson(Expression)
  */
 public class UserQueryJsonSerializer extends VisitorAdapter<JsonElement> {
+
+    /**
+     * @see #toJson(Expression)
+     */
+    private UserQueryJsonSerializer() {
+    }
+
+    /**
+     * Converts the <code>expression</code> to a JSON that can be used as input for {@link QueryParser}.
+     *
+     * @param expression A query expressed with a {@link Expression}.
+     * @return A String containing a JSON that can be used as input of {@link QueryParser}.
+     * @see com.amalto.core.query.user.UserQueryBuilder
+     */
+    public static String toJson(Expression expression) {
+        final JsonElement jsonElement = expression.accept(new UserQueryJsonSerializer());
+        return jsonElement.toString();
+    }
 
     private static String toPath(Field field) {
         return field.getFieldMetadata().getContainingType().getName() + '/' + field.getFieldMetadata().getName();

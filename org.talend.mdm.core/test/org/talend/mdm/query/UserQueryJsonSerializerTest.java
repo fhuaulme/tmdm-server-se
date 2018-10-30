@@ -77,10 +77,10 @@ public class UserQueryJsonSerializerTest extends TestCase {
 
     private void assertRoundTrip(Select select) {
         // when
-        final JsonElement element = select.accept(new UserQueryJsonSerializer());
+        final String jsonAsString = UserQueryJsonSerializer.toJson(select);
 
         // then
-        final Expression roundTripQuery = QueryParser.newParser(repository).parse(element.toString());
+        final Expression roundTripQuery = QueryParser.newParser(repository).parse(jsonAsString);
         assertEquals(select, roundTripQuery);
     }
 }
