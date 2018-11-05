@@ -1,8 +1,0 @@
-{
-  "select": {
-    "from": ["Type1"],
-    "fields": [
-      {"count": {}}
-    ]
-  }
-}

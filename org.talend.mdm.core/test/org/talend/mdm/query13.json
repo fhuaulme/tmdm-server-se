@@ -1,9 +1,0 @@
-{
-  "select": {
-    "from": ["Type1"],
-    "fields": [
-      {"max": {"field": "Type1/id"}},
-      {"min": {"field": "Type1/id"}}
-    ]
-  }
-}
