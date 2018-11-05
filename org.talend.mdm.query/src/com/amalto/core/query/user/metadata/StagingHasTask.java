@@ -10,15 +10,14 @@
 
 package com.amalto.core.query.user.metadata;
 
-import static com.amalto.core.query.user.UserQueryBuilder.alias;
-
-import org.talend.mdm.commmon.metadata.Types;
-
 import com.amalto.core.query.user.Expression;
 import com.amalto.core.query.user.TypedExpression;
 import com.amalto.core.query.user.UserStagingQueryBuilder;
 import com.amalto.core.query.user.Visitor;
-import com.amalto.core.storage.Storage;
+import com.amalto.core.storage.record.CommonStorage;
+import org.talend.mdm.commmon.metadata.Types;
+
+import static com.amalto.core.query.user.UserQueryBuilder.alias;
 
 @SuppressWarnings("nls")
 public class StagingHasTask implements MetadataField {
@@ -29,7 +28,7 @@ public class StagingHasTask implements MetadataField {
 
     private static final String[] STAGING_HAS_TASK_FIELD = new String[] { "$staging_hastask$", "metadata:staging_hastask", "staging_hastask" };
 
-    private final PropertyReader propertyReader = new PropertyReader(Storage.METADATA_STAGING_HAS_TASK);
+    private final PropertyReader propertyReader = new PropertyReader(CommonStorage.METADATA_STAGING_HAS_TASK);
 
     private StagingHasTask() {
     }
