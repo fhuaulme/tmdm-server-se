@@ -12,7 +12,6 @@ package org.talend.mdm.query;
 import com.amalto.core.query.user.Expression;
 import com.amalto.core.query.user.Select;
 import com.amalto.core.query.user.UserQueryBuilder;
-import com.google.gson.JsonElement;
 import junit.framework.TestCase;
 import org.talend.mdm.QueryParserTest;
 import org.talend.mdm.commmon.metadata.ComplexTypeMetadata;
