@@ -15,13 +15,16 @@ import com.amalto.core.query.user.metadata.MetadataField;
 import com.amalto.core.query.user.metadata.TaskId;
 import com.amalto.core.query.user.metadata.Timestamp;
 import com.amalto.core.storage.record.MetaDataUtils;
+import com.amalto.xmlserver.interfaces.IWhereItem;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.collections.Transformer;
 import org.apache.commons.lang.NotImplementedException;
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.talend.mdm.commmon.metadata.*;
+import org.talend.tql.parser.Tql;
 
+import javax.jws.soap.SOAPBinding;
 import java.math.BigDecimal;
 import java.text.ParseException;
 import java.util.*;
@@ -851,6 +854,12 @@ public class UserQueryBuilder {
                 throw new UnsupportedOperationException("Can't select twice a non-field expression.");
             }
         }
+        return this;
+    }
+
+    public UserQueryBuilder where(String tqlCondition, MetadataRepository metadataRepository) {
+        IWhereItem condition = Tql.parse(tqlCondition).accept(new TQLPredicateToMDMPredicate());
+        where(UserQueryHelper.buildCondition(this, condition, metadataRepository));
         return this;
     }
 

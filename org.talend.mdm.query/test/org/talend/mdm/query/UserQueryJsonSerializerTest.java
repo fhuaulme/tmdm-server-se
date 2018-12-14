@@ -15,7 +15,6 @@ import com.amalto.core.query.user.TypedExpression;
 import com.amalto.core.query.user.UserQueryBuilder;
 import com.amalto.core.query.user.UserQueryHelper;
 import com.amalto.xmlserver.interfaces.WhereCondition;
-import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import junit.framework.TestCase;
@@ -113,6 +112,22 @@ public class UserQueryJsonSerializerTest extends TestCase {
         TypedExpressionProcessor typedExpressionProcessor = Deserializer.getTypedExpression(jsonObject);
         TypedExpression typedExpression = typedExpressionProcessor.process(jsonObject, this.repository);
         assertNotNull(typedExpression);
+    }
+
+    public void testConditionOperatorTQL(){
+        final ComplexTypeMetadata type1 = repository.getComplexType("Type1");
+        final UserQueryBuilder userQueryBuilder = UserQueryBuilder.from(type1).where("'Type1/value1' = 10", this.repository);
+        final Select select = userQueryBuilder.getSelect();
+        assertNotNull(select.getCondition());
+        assertRoundTrip(select);
+    }
+
+    public void testConditionContainsTQL(){
+        final ComplexTypeMetadata type1 = repository.getComplexType("Type1");
+        final UserQueryBuilder userQueryBuilder = UserQueryBuilder.from(type1).where("'Type1/value1' contains 'Toto'", this.repository);
+        final Select select = userQueryBuilder.getSelect();
+        assertNotNull(select.getCondition());
+        assertRoundTrip(select);
     }
 
 
