@@ -130,6 +130,13 @@ public class UserQueryJsonSerializerTest extends TestCase {
         assertRoundTrip(select);
     }
 
+    public void testConditionInTQL(){
+        final ComplexTypeMetadata type1 = repository.getComplexType("Type1");
+        final UserQueryBuilder userQueryBuilder = UserQueryBuilder.from(type1).where("'Type1/value1' in ['value1', 'value2']", this.repository);
+        final Select select = userQueryBuilder.getSelect();
+        assertNotNull(select.getCondition());
+        assertRoundTrip(select);
+    }
 
     private void assertRoundTrip(Select select) {
         // when

@@ -858,8 +858,8 @@ public class UserQueryBuilder {
     }
 
     public UserQueryBuilder where(String tqlCondition, MetadataRepository metadataRepository) {
-        IWhereItem condition = Tql.parse(tqlCondition).accept(new TQLPredicateToMDMPredicate());
-        where(UserQueryHelper.buildCondition(this, condition, metadataRepository));
+        UserQueryBuilder userQueryBuilder = Tql.parse(tqlCondition).accept(new TQLPredicateToMDMPredicate(metadataRepository));
+        where(userQueryBuilder.getSelect().getCondition());
         return this;
     }
 

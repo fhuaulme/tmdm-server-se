@@ -10,9 +10,9 @@
  */
 package com.amalto.core.query.user;
 
-import com.amalto.xmlserver.interfaces.IWhereItem;
 import com.amalto.xmlserver.interfaces.WhereCondition;
 import org.apache.commons.lang.NotImplementedException;
+import org.talend.mdm.commmon.metadata.MetadataRepository;
 import org.talend.tql.model.AllFields;
 import org.talend.tql.model.AndExpression;
 import org.talend.tql.model.ComparisonExpression;
@@ -35,35 +35,45 @@ import org.talend.tql.visitor.IASTVisitor;
 
 import java.util.Arrays;
 
-public class TQLPredicateToMDMPredicate implements IASTVisitor<IWhereItem> {
+public class TQLPredicateToMDMPredicate implements IASTVisitor<UserQueryBuilder> {
 
-    private WhereCondition whereCondition = new WhereCondition();
+    private String leftPath;
+    private String value;
+    private String operator;
+
+    private MetadataRepository metadataRepository;
+
+    private UserQueryBuilder userQueryBuilder;
+
+    public TQLPredicateToMDMPredicate(MetadataRepository metadataRepository) {
+        this.metadataRepository = metadataRepository;
+    }
 
     @Override
-    public IWhereItem visit(TqlElement tqlElement) {
+    public UserQueryBuilder visit(TqlElement tqlElement) {
         throw new NotImplementedException("TqlElement not implemented.");
     }
 
     @Override
-    public IWhereItem visit(ComparisonOperator comparisonOperator) {
+    public UserQueryBuilder visit(ComparisonOperator comparisonOperator) {
         switch (comparisonOperator.getOperator().name()) {
             case "EQ" :
-                whereCondition.setOperator("=");
+                this.operator = "=";
                 break;
             case "NEQ" :
-                whereCondition.setOperator("!=");
+                //whereCondition.setOperator("!=");
                 break;
             case "LT" :
-                whereCondition.setOperator("<");
+                //whereCondition.setOperator("<");
                 break;
             case "GT" :
-                whereCondition.setOperator(">");
+                //whereCondition.setOperator(">");
                 break;
             case "LET" :
-                whereCondition.setOperator("<=");
+                //whereCondition.setOperator("<=");
                 break;
             case "GET" :
-                whereCondition.setOperator(">=");
+                //.setOperator(">=");
                 break;
             default :
                 throw new NotImplementedException("'" + comparisonOperator.getOperator().name() + "' support not implemented.");
@@ -72,102 +82,105 @@ public class TQLPredicateToMDMPredicate implements IASTVisitor<IWhereItem> {
     }
 
     @Override
-    public IWhereItem visit(LiteralValue literalValue) {
-        whereCondition.setRightValueOrPath(literalValue.getValue());
+    public UserQueryBuilder visit(LiteralValue literalValue) {
+        this.value = literalValue.getValue();
         return null;
     }
 
     @Override
-    public IWhereItem visit(FieldReference fieldReference) {
-        whereCondition.setLeftPath(fieldReference.getPath().substring(1, fieldReference.getPath().length()-1));
+    public UserQueryBuilder visit(FieldReference fieldReference) {
+        this.leftPath = fieldReference.getPath().substring(1, fieldReference.getPath().length()-1);
         return null;
     }
 
     @Override
-    public IWhereItem visit(org.talend.tql.model.Expression expression) {
+    public UserQueryBuilder visit(org.talend.tql.model.Expression expression) {
         throw new NotImplementedException("Expression not implemented.");
     }
 
     @Override
-    public IWhereItem visit(AndExpression andExpression) {
+    public UserQueryBuilder visit(AndExpression andExpression) {
         Arrays.stream(andExpression.getExpressions()).forEach(expression -> expression.accept(this));
         return null;
     }
 
     @Override
-    public IWhereItem visit(OrExpression orExpression) {
+    public UserQueryBuilder visit(OrExpression orExpression) {
         if (orExpression.getExpressions().length == 1) {
             orExpression.getExpressions()[0].accept(this);
         } else {
             //Arrays.stream(orExpression.getExpressions()).forEach(expression -> expression.accept(this));
             throw new NotImplementedException("Or expression not implemented.");
         }
-        return whereCondition;
-    }
-
-    @Override
-    public IWhereItem visit(ComparisonExpression comparisonExpression) {
-        comparisonExpression.getField().accept(this);
-        comparisonExpression.getValueOrField().accept(this);
-        comparisonExpression.getOperator().accept(this);
-        return whereCondition;
-    }
-
-    @Override
-    public IWhereItem visit(FieldInExpression fieldInExpression) {
-        throw new NotImplementedException("FieldIn expression not implemented.");
-    }
-
-    @Override
-    public IWhereItem visit(FieldIsEmptyExpression fieldIsEmptyExpression) {
-        throw new NotImplementedException("FieldIsEmpty expression not implemented.");
-    }
-
-    @Override
-    public IWhereItem visit(FieldIsValidExpression fieldIsValidExpression) {
-        throw new NotImplementedException("FieldIsEmpty expression not implemented.");
-    }
-
-    @Override
-    public IWhereItem visit(FieldIsInvalidExpression fieldIsInvalidExpression) {
-        throw new NotImplementedException("FieldIsInvalid expression not implemented.");
-    }
-
-    @Override
-    public IWhereItem visit(FieldMatchesRegex fieldMatchesRegex) {
-        throw new NotImplementedException("FieldMatches regex not implemented.");
-    }
-
-    @Override
-    public IWhereItem visit(FieldCompliesPattern fieldCompliesPattern) {
-        throw new NotImplementedException("FieldComplies pattern not implemented.");
-    }
-
-    @Override
-    public IWhereItem visit(FieldWordCompliesPattern fieldWordCompliesPattern) {
-        throw new NotImplementedException("FieldWordComplies pattern not implemented.");
-    }
-
-    @Override
-    public IWhereItem visit(FieldBetweenExpression fieldBetweenExpression) {
-        throw new NotImplementedException("FieldBetween expression not implemented.");
-    }
-
-    @Override
-    public IWhereItem visit(NotExpression notExpression) {
-        throw new NotImplementedException("NotExpression not implemented.");
-    }
-
-    @Override
-    public IWhereItem visit(FieldContainsExpression fieldContainsExpression) {
-        fieldContainsExpression.getField().accept(this);
-        whereCondition.setOperator("CONTAINS");
-        whereCondition.setRightValueOrPath(fieldContainsExpression.getValue());
         return null;
     }
 
     @Override
-    public IWhereItem visit(AllFields allFields) {
+    public UserQueryBuilder visit(ComparisonExpression comparisonExpression) {
+        comparisonExpression.getField().accept(this);
+        comparisonExpression.getValueOrField().accept(this);
+        comparisonExpression.getOperator().accept(this);
+        return null;
+    }
+
+    @Override
+    public UserQueryBuilder visit(FieldInExpression fieldInExpression) {
+        fieldInExpression.getField().accept(this);
+        //String[] strings = whereCondition.getLeftPath().split("/");
+        //UserQueryBuilder.in()
+        throw new NotImplementedException("FieldIn expression not implemented.");
+    }
+
+    @Override
+    public UserQueryBuilder visit(FieldIsEmptyExpression fieldIsEmptyExpression) {
+        throw new NotImplementedException("FieldIsEmpty expression not implemented.");
+    }
+
+    @Override
+    public UserQueryBuilder visit(FieldIsValidExpression fieldIsValidExpression) {
+        throw new NotImplementedException("FieldIsEmpty expression not implemented.");
+    }
+
+    @Override
+    public UserQueryBuilder visit(FieldIsInvalidExpression fieldIsInvalidExpression) {
+        throw new NotImplementedException("FieldIsInvalid expression not implemented.");
+    }
+
+    @Override
+    public UserQueryBuilder visit(FieldMatchesRegex fieldMatchesRegex) {
+        throw new NotImplementedException("FieldMatches regex not implemented.");
+    }
+
+    @Override
+    public UserQueryBuilder visit(FieldCompliesPattern fieldCompliesPattern) {
+        throw new NotImplementedException("FieldComplies pattern not implemented.");
+    }
+
+    @Override
+    public UserQueryBuilder visit(FieldWordCompliesPattern fieldWordCompliesPattern) {
+        throw new NotImplementedException("FieldWordComplies pattern not implemented.");
+    }
+
+    @Override
+    public UserQueryBuilder visit(FieldBetweenExpression fieldBetweenExpression) {
+        throw new NotImplementedException("FieldBetween expression not implemented.");
+    }
+
+    @Override
+    public UserQueryBuilder visit(NotExpression notExpression) {
+        throw new NotImplementedException("NotExpression not implemented.");
+    }
+
+    @Override
+    public UserQueryBuilder visit(FieldContainsExpression fieldContainsExpression) {
+        fieldContainsExpression.getField().accept(this);
+        //whereCondition.setOperator("CONTAINS");
+        //whereCondition.setRightValueOrPath(fieldContainsExpression.getValue());
+        return null;
+    }
+
+    @Override
+    public UserQueryBuilder visit(AllFields allFields) {
         throw new NotImplementedException("AllFields not implemented.");
     }
 }
