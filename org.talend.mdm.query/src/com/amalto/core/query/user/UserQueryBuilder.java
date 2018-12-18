@@ -45,6 +45,10 @@ public class UserQueryBuilder {
         this.expression = expression;
     }
 
+    protected UserQueryBuilder() {
+        this.expression = new Select();
+    }
+
     private Select expressionAsSelect() {
         return ((Select) expression);
     }
@@ -863,6 +867,24 @@ public class UserQueryBuilder {
         return this;
     }
 
+    public static UserQueryBuilder where(UserQueryBuilder userQueryBuilder, Condition condition, Predicate predicate) {
+        if (condition == null) {
+            throw new IllegalArgumentException("Condition cannot be null");
+        }
+        if (userQueryBuilder.getSelect().getCondition() == null) {
+            userQueryBuilder.getSelect().setCondition(condition);
+        } else {
+            if (predicate == Predicate.OR) {
+                userQueryBuilder.getSelect().setCondition(or(userQueryBuilder.getSelect().getCondition(), condition));
+            } else if (predicate == Predicate.AND) {
+                userQueryBuilder.getSelect().setCondition(and(userQueryBuilder.getSelect().getCondition(), condition));
+            } else {
+                throw new NotImplementedException("Not implemented: support of " + predicate);
+            }
+        }
+        return userQueryBuilder;
+    }
+
     /**
      * Adds a {@link Condition} to the {@link Select} built by this {@link UserQueryBuilder}. If this method has previously
      * been called, a logic "and"/"or" condition (depends on <code>predicate</code> argument) is created between the
@@ -874,22 +896,7 @@ public class UserQueryBuilder {
      * @throws IllegalArgumentException If <code>condition</code> parameter is null.
      */
     public UserQueryBuilder where(Condition condition, Predicate predicate) {
-        if (condition == null) {
-            throw new IllegalArgumentException("Condition cannot be null");
-        }
-        if (expressionAsSelect().getCondition() == null) {
-            expressionAsSelect().setCondition(condition);
-        } else {
-            if (predicate == Predicate.OR) {
-                expressionAsSelect().setCondition(or(expressionAsSelect().getCondition(), condition));
-            } else if (predicate == Predicate.AND) {
-                expressionAsSelect().setCondition(and(expressionAsSelect().getCondition(), condition));
-            } else {
-                throw new NotImplementedException("Not implemented: support of " + predicate);
-            }
-        }
-
-        return this;
+        return where(this, condition, predicate);
     }
 
     /**

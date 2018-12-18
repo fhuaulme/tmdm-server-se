@@ -33,17 +33,20 @@ import org.talend.tql.model.OrExpression;
 import org.talend.tql.model.TqlElement;
 import org.talend.tql.visitor.IASTVisitor;
 
-import java.util.Arrays;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.stream.Stream;
+
+import static com.amalto.core.query.user.UserQueryBuilder.in;
 
 public class TQLPredicateToMDMPredicate implements IASTVisitor<UserQueryBuilder> {
 
     private String leftPath;
-    private String value;
-    private String operator;
+    private List<String> values = new ArrayList<>();
 
     private MetadataRepository metadataRepository;
 
-    private UserQueryBuilder userQueryBuilder;
+    private UserQueryBuilder userQueryBuilder = new UserQueryBuilder();
 
     public TQLPredicateToMDMPredicate(MetadataRepository metadataRepository) {
         this.metadataRepository = metadataRepository;
@@ -56,34 +59,13 @@ public class TQLPredicateToMDMPredicate implements IASTVisitor<UserQueryBuilder>
 
     @Override
     public UserQueryBuilder visit(ComparisonOperator comparisonOperator) {
-        switch (comparisonOperator.getOperator().name()) {
-            case "EQ" :
-                this.operator = "=";
-                break;
-            case "NEQ" :
-                //whereCondition.setOperator("!=");
-                break;
-            case "LT" :
-                //whereCondition.setOperator("<");
-                break;
-            case "GT" :
-                //whereCondition.setOperator(">");
-                break;
-            case "LET" :
-                //whereCondition.setOperator("<=");
-                break;
-            case "GET" :
-                //.setOperator(">=");
-                break;
-            default :
-                throw new NotImplementedException("'" + comparisonOperator.getOperator().name() + "' support not implemented.");
-        }
+        this.userQueryBuilder = UserQueryBuilder.where(this.userQueryBuilder, UserQueryHelper.buildCondition(this.userQueryBuilder, new WhereCondition(this.leftPath, this.getOperatorFromComparisonOperator(comparisonOperator.getOperator().name()), this.values.get(0), null), this.metadataRepository), null);
         return null;
     }
 
     @Override
     public UserQueryBuilder visit(LiteralValue literalValue) {
-        this.value = literalValue.getValue();
+        this.values.add(literalValue.getValue());
         return null;
     }
 
@@ -100,19 +82,24 @@ public class TQLPredicateToMDMPredicate implements IASTVisitor<UserQueryBuilder>
 
     @Override
     public UserQueryBuilder visit(AndExpression andExpression) {
-        Arrays.stream(andExpression.getExpressions()).forEach(expression -> expression.accept(this));
-        return null;
+        if (andExpression.getExpressions().length == 1) {
+            andExpression.getExpressions()[0].accept(this);
+            return this.userQueryBuilder;
+        } else {
+            //Arrays.stream(andExpression.getExpressions()).forEach(expression -> expression.accept(this));
+            throw new NotImplementedException("And expression not implemented.");
+        }
     }
 
     @Override
     public UserQueryBuilder visit(OrExpression orExpression) {
         if (orExpression.getExpressions().length == 1) {
             orExpression.getExpressions()[0].accept(this);
+            return this.userQueryBuilder;
         } else {
             //Arrays.stream(orExpression.getExpressions()).forEach(expression -> expression.accept(this));
             throw new NotImplementedException("Or expression not implemented.");
         }
-        return null;
     }
 
     @Override
@@ -126,9 +113,9 @@ public class TQLPredicateToMDMPredicate implements IASTVisitor<UserQueryBuilder>
     @Override
     public UserQueryBuilder visit(FieldInExpression fieldInExpression) {
         fieldInExpression.getField().accept(this);
-        //String[] strings = whereCondition.getLeftPath().split("/");
-        //UserQueryBuilder.in()
-        throw new NotImplementedException("FieldIn expression not implemented.");
+        Stream.of(fieldInExpression.getValues()).forEach(value -> this.values.add(value.getValue()));
+        this.userQueryBuilder.where(in(this.metadataRepository.getComplexType(this.getEntity(this.leftPath)).getField(getField(this.leftPath)), this.values));
+        return null;
     }
 
     @Override
@@ -174,13 +161,47 @@ public class TQLPredicateToMDMPredicate implements IASTVisitor<UserQueryBuilder>
     @Override
     public UserQueryBuilder visit(FieldContainsExpression fieldContainsExpression) {
         fieldContainsExpression.getField().accept(this);
-        //whereCondition.setOperator("CONTAINS");
-        //whereCondition.setRightValueOrPath(fieldContainsExpression.getValue());
+        this.userQueryBuilder = UserQueryBuilder.where(this.userQueryBuilder, UserQueryHelper.buildCondition(userQueryBuilder, new WhereCondition(leftPath, "CONTAINS", fieldContainsExpression.getValue(), null), this.metadataRepository), null);
         return null;
     }
 
     @Override
     public UserQueryBuilder visit(AllFields allFields) {
         throw new NotImplementedException("AllFields not implemented.");
+    }
+
+    private String getEntity(String leftPath) {
+        return leftPath.split("/")[0];
+    }
+
+    private String getField(String leftPath) {
+        return leftPath.split("/")[1];
+    }
+
+    private String getOperatorFromComparisonOperator(String name) {
+        String operator;
+        switch (name) {
+            case "EQ" :
+                operator = "=";
+                break;
+            case "NEQ" :
+                operator = "!=";
+                break;
+            case "LT" :
+                operator = "<";
+                break;
+            case "GT" :
+                operator = ">";
+                break;
+            case "LET" :
+                operator = "<=";
+                break;
+            case "GET" :
+                operator = ">=";
+                break;
+            default :
+                throw new NotImplementedException("'" + name + "' support not implemented.");
+        }
+        return operator;
     }
 }
